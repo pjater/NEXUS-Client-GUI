@@ -1,2 +1,2 @@
-# AutoCrafter-Client
-Minecraft mod voor educatieve redenen
+# NEXUS-Client (GUI)
+Minecraft cheat GUI in html css and js
