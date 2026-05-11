@@ -1,0 +1,1904 @@
+﻿<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus - Minecraft Hacks</title>
+    <script>
+        (function preloadThemeBeforePaint() {
+            const root = document.documentElement;
+            root.classList.add('theme-preload');
+
+            try {
+                const savedTheme = String(localStorage.getItem('nexus-theme') || 'dark').trim().toLowerCase();
+                const savedAccent = String(localStorage.getItem('nexus-accent') || '#00d9ff').trim() || '#00d9ff';
+                const savedRadius = Math.max(0, Math.min(20, parseInt(localStorage.getItem('nexus-borderRadius') || '8', 10) || 8));
+                const savedOpacity = Math.max(50, Math.min(100, parseInt(localStorage.getItem('nexus-opacity') || '100', 10) || 100));
+                const clamp = (value, min, max, fallback) => {
+                    const num = Number(value);
+                    if (!Number.isFinite(num)) return fallback;
+                    return Math.max(min, Math.min(max, num));
+                };
+                const themeStudio = (() => {
+                    try {
+                        const parsed = JSON.parse(localStorage.getItem('nexus-themeStudio') || '{}');
+                        return parsed && typeof parsed === 'object' ? parsed : {};
+                    } catch (_) {
+                        return {};
+                    }
+                })();
+                const mainSize = clamp(themeStudio.mainSize, 260, 1800, 560);
+                const mainAlphaPct = clamp(themeStudio.mainAlphaPct, 0, 40, 15);
+                const secondaryAlphaPct = clamp(themeStudio.secondaryAlphaPct, 0, 35, 9);
+                const tertiaryAlphaPct = clamp(themeStudio.tertiaryAlphaPct, 0, 35, 8);
+                const bootSize = clamp(themeStudio.bootSize, 1200, 4200, 2100);
+                const bootAlphaPct = clamp(themeStudio.bootAlphaPct, 0, 45, 16);
+                const normalizeHex = (value, fallback) => {
+                    const text = String(value || '').trim();
+                    if (/^#[0-9a-fA-F]{6}$/.test(text)) return text.toLowerCase();
+                    if (/^#[0-9a-fA-F]{3}$/.test(text)) {
+                        return `#${text[1]}${text[1]}${text[2]}${text[2]}${text[3]}${text[3]}`.toLowerCase();
+                    }
+                    return String(fallback || '#000000').toLowerCase();
+                };
+                const colorblindModeRaw = String(themeStudio.colorblindMode || 'protanopia').trim().toLowerCase();
+                const colorblindMode = ['protanopia', 'deuteranopia', 'tritanopia', 'high-contrast'].includes(colorblindModeRaw)
+                    ? colorblindModeRaw
+                    : 'protanopia';
+                const colorblindEnabled = themeStudio.colorblindEnabled === true || themeStudio.colorblindEnabled === 'true';
+                const defaultMainBg = savedTheme === 'light' ? '#ffffff' : '#0d0d0d';
+                const defaultSidebarBg = savedTheme === 'light' ? '#f5f5f5' : '#1a1a1a';
+                const defaultHeaderBg = savedTheme === 'light' ? '#eeeeee' : '#111111';
+                const defaultCardBg = savedTheme === 'light' ? '#f5f5f5' : '#1a1a1a';
+                const defaultButtonBg = savedTheme === 'light' ? '#ffffff' : '#111111';
+                const useThemeFlag = (flagValue, colorValue, darkDefault, lightDefault) => {
+                    if (flagValue === true || flagValue === 'true') return true;
+                    if (flagValue === false || flagValue === 'false') return false;
+                    const normalized = normalizeHex(colorValue, darkDefault);
+                    const darkNorm = normalizeHex(darkDefault, darkDefault);
+                    const lightNorm = normalizeHex(lightDefault, lightDefault);
+                    return normalized === darkNorm || normalized === lightNorm;
+                };
+                const resolvedMainBg = useThemeFlag(themeStudio.useThemeMainBg, themeStudio.mainBgColor, '#0d0d0d', '#ffffff')
+                    ? defaultMainBg
+                    : normalizeHex(themeStudio.mainBgColor, defaultMainBg);
+                const resolvedSidebarBg = useThemeFlag(themeStudio.useThemeSidebarBg, themeStudio.sidebarBgColor, '#1a1a1a', '#f5f5f5')
+                    ? defaultSidebarBg
+                    : normalizeHex(themeStudio.sidebarBgColor, defaultSidebarBg);
+                const resolvedHeaderBg = useThemeFlag(themeStudio.useThemeHeaderBg, themeStudio.headerBgColor, '#111111', '#eeeeee')
+                    ? defaultHeaderBg
+                    : normalizeHex(themeStudio.headerBgColor, defaultHeaderBg);
+                const resolvedCardBg = useThemeFlag(themeStudio.useThemeCardBg, themeStudio.cardBgColor, '#1a1a1a', '#f5f5f5')
+                    ? defaultCardBg
+                    : normalizeHex(themeStudio.cardBgColor, defaultCardBg);
+                const resolvedButtonBg = useThemeFlag(themeStudio.useThemeButtonBg, themeStudio.buttonBgColor, '#111111', '#ffffff')
+                    ? defaultButtonBg
+                    : normalizeHex(themeStudio.buttonBgColor, defaultButtonBg);
+
+                const hex = savedAccent.replace('#', '');
+                let accentRgb = '0, 217, 255';
+                if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+                    const r = parseInt(hex[0] + hex[0], 16);
+                    const g = parseInt(hex[1] + hex[1], 16);
+                    const b = parseInt(hex[2] + hex[2], 16);
+                    accentRgb = `${r}, ${g}, ${b}`;
+                } else if (/^[0-9a-fA-F]{6}$/.test(hex)) {
+                    const r = parseInt(hex.slice(0, 2), 16);
+                    const g = parseInt(hex.slice(2, 4), 16);
+                    const b = parseInt(hex.slice(4, 6), 16);
+                    accentRgb = `${r}, ${g}, ${b}`;
+                }
+
+                root.style.setProperty('--accent', savedAccent);
+                root.style.setProperty('--accent-rgb', accentRgb);
+                root.style.setProperty('--border-radius', `${savedRadius}px`);
+                root.style.setProperty('--opacity', String(savedOpacity / 100));
+                root.style.setProperty('--ui-opacity', String(savedOpacity / 100));
+                root.style.setProperty('--bg-orb-main-size', `${mainSize}px`);
+                root.style.setProperty('--bg-orb-main-alpha', String(mainAlphaPct / 100));
+                root.style.setProperty('--bg-orb-secondary-alpha', String(secondaryAlphaPct / 100));
+                root.style.setProperty('--bg-orb-tertiary-alpha', String(tertiaryAlphaPct / 100));
+                root.style.setProperty('--boot-orb-size', `${bootSize}px`);
+                root.style.setProperty('--boot-orb-alpha', String(bootAlphaPct / 100));
+                root.style.setProperty('--theme-studio-main-bg', resolvedMainBg);
+                root.style.setProperty('--theme-studio-sidebar-bg', resolvedSidebarBg);
+                root.style.setProperty('--theme-studio-header-bg', resolvedHeaderBg);
+                root.style.setProperty('--theme-studio-card-bg', resolvedCardBg);
+                root.style.setProperty('--theme-studio-button-bg', resolvedButtonBg);
+                root.classList.remove('colorblind-mode-protanopia', 'colorblind-mode-deuteranopia', 'colorblind-mode-tritanopia', 'colorblind-mode-high-contrast');
+                if (colorblindEnabled) {
+                    root.classList.add(`colorblind-mode-${colorblindMode}`);
+                }
+
+                if (savedTheme === 'light') {
+                    root.style.setProperty('--bg-primary', '#FFFFFF');
+                    root.style.setProperty('--bg-secondary', '#F5F5F5');
+                    root.style.setProperty('--text-primary', '#333333');
+                    root.style.setProperty('--text-secondary', '#666666');
+                    root.style.setProperty('--border-dark', '#DDDDDD');
+                }
+            } catch (_) {
+                // Ignore storage parse errors and keep CSS defaults.
+            }
+        })();
+       </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="app-name-section">
+                    <button class="app-icon" id="appIconReload" type="button" aria-label="Reload page"></button>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-page="combat">
+                    <span class="nav-icon">&#9876;&#65039;</span>
+                    <span class="nav-text">COMBAT</span>
+                </button>
+                <button class="nav-btn" data-page="hacks">
+                    <span class="nav-icon">&#128187;</span>
+                    <span class="nav-text">HACKS</span>
+                </button>
+                <button class="nav-btn" data-page="visuals">
+                    <span class="nav-icon">&#128065;&#65039;</span>
+                    <span class="nav-text">VISUALS</span>
+                </button>
+                <button class="nav-btn" data-page="settings">
+                    <span class="nav-icon">&#9881;&#65039;</span>
+                    <span class="nav-text">SETTINGS</span>
+                </button>
+                <button class="nav-btn" data-page="about">
+                    <span class="nav-icon">&#8505;&#65039;</span>
+                    <span class="nav-text">ABOUT</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarKeybindsBtn" type="button">
+                    <span class="nav-sub-text">&#8627; KEY BINDS</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarMacrosBtn" type="button">
+                    <span class="nav-sub-text">&#8627; MACROS</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarAutomationBtn" type="button">
+                    <span class="nav-sub-text">&#8627; AUTOMATION</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarWorkflowBtn" type="button">
+                    <span class="nav-sub-text">&#8627; WORKFLOW</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarCustomPagesBtn" type="button">
+                    <span class="nav-sub-text">&#8627; CUSTOM PAGE</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarDebugBtn" type="button">
+                    <span class="nav-sub-text">&#8627; DEBUG</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarMarketplaceBtn" type="button">
+                    <span class="nav-sub-text">&#8627; MARKETPLACE</span>
+                </button>
+                <button class="nav-sub-btn" id="sidebarThemeStudioBtn" type="button">
+                    <span class="nav-sub-text">&#8627; THEME STUDIO</span>
+                </button>
+            </nav>
+
+            <div class="profile-indicator">
+                <div class="profile-label">PROFILE</div>
+                <div class="profile-name" id="profileName">Default</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                        <h1 class="page-title">COMBAT</h1>
+                        <span class="app-subtitle">NEXUS</span>
+                        <div class="header-controls">
+                            <div style="position: relative; width: 100%;">
+                                <input id="featureSearch" class="feature-search" placeholder="Search features & settings..." />
+                                <div id="searchDropdown" class="search-dropdown" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                <div class="header-right">
+                    <div class="header-status">
+                        <span class="status-indicator"></span>
+                        <span class="status-text">ONLINE</span>
+                        <span class="session-timer" id="sessionTimerBadge">00:00</span>
+                        <button class="hud-toggle-btn" id="toggleMiniHudBtn">HUD OFF</button>
+                    </div>
+                    <div class="header-account-wrap">
+                        <button class="header-account-btn" id="headerAccountBtn" type="button" aria-label="Open account page">
+                            <span class="header-account-avatar" id="headerAccountAvatar" aria-hidden="true"></span>
+                            <span class="header-account-label" id="headerAccountLabel">SIGN IN / SIGN UP</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Toggle Bar -->
+            <div class="quick-toggle-bar" id="quickToggleBar" aria-hidden="false"></div>
+            <div class="multi-select-toolbar" id="multiSelectToolbar">
+                <button class="btn-secondary" id="toggleMultiSelectBtn">MULTI-SELECT OFF</button>
+                <span class="multi-select-count multi-select-extra" id="multiSelectCount">0 selected</span>
+                <button class="btn-secondary multi-select-extra" id="enableSelectedBtn" disabled>ENABLE SELECTED</button>
+                <button class="btn-secondary multi-select-extra" id="disableSelectedBtn" disabled>DISABLE SELECTED</button>
+                <button class="btn-secondary multi-select-extra" id="favoriteSelectedBtn" disabled>FAVORITE SELECTED</button>
+                <button class="btn-secondary multi-select-extra" id="clearSelectedBtn" disabled>CLEAR SELECTED</button>
+            </div>
+
+            <!-- Pages Container -->
+            <div class="pages-container">
+                <!-- COMBAT Page -->
+                <div class="page" id="page-combat" data-page="combat">
+                    <div class="features-grid" id="combatGrid">
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>KillAura</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="killaura">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Range</label>
+                                    <div class="input-group">
+                                        <input type="range" min="1" max="10" value="5" class="slider">
+                                        <input type="number" min="1" max="10" value="5" class="spinbox">
+                                    </div>
+                                </div>
+                                <div class="setting">
+                                    <label>Mode</label>
+                                    <select class="combo-box">
+                                        <option>Single</option>
+                                        <option>Multi</option>
+                                        <option>Cooldown</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Reach</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="reach">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Distance</label>
+                                    <div class="input-group">
+                                        <input type="range" min="4" max="20" value="6" class="slider">
+                                        <input type="number" min="4" max="20" value="6" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>AutoTotem</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="autototem">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Health Threshold</label>
+                                    <div class="input-group">
+                                        <input type="range" min="0.5" max="10" value="3.5" step="0.5" class="slider">
+                                        <input type="number" min="0.5" max="10" value="3.5" step="0.5" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>AutoClicker</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="autoclicker">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>CPS</label>
+                                    <div class="input-group">
+                                        <input type="range" min="5" max="20" value="10" class="slider">
+                                        <input type="number" min="5" max="20" value="10" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Aimbot</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="aimbot">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>FOV</label>
+                                    <div class="input-group">
+                                        <input type="range" min="5" max="90" value="45" step="5" class="slider">
+                                        <input type="number" min="5" max="90" value="45" step="5" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UTILITIES Page -->
+                <!-- HACKS Page -->
+                <div class="page" id="page-hacks" data-page="hacks" style="display: none;">
+                    <div class="features-grid" id="hacksGrid">
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Fly</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="fly">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Speed</label>
+                                    <div class="input-group">
+                                        <input type="range" min="0.5" max="5" value="2" step="0.5" class="slider">
+                                        <input type="number" min="0.5" max="5" value="2" step="0.5" class="spinbox">
+                                    </div>
+                                </div>
+                                <div class="setting">
+                                    <label>Mode</label>
+                                    <select class="combo-box">
+                                        <option>Creative</option>
+                                        <option>Vanilla</option>
+                                        <option>Boost</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Speed</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="speed">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Multiplier</label>
+                                    <div class="input-group">
+                                        <input type="range" min="1" max="5" value="2" step="0.1" class="slider">
+                                        <input type="number" min="1" max="5" value="2" step="0.1" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>NoFall</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="nofall">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Mode</label>
+                                    <select class="combo-box">
+                                        <option>Packet</option>
+                                        <option>Teleport</option>
+                                        <option>Liquid</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Scaffold</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="scaffold">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Speed</label>
+                                    <div class="input-group">
+                                        <input type="range" min="1" max="10" value="5" class="slider">
+                                        <input type="number" min="1" max="10" value="5" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>ChestStealer</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="chestsstealer">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Delay (ms)</label>
+                                    <div class="input-group">
+                                        <input type="range" min="0" max="500" value="100" class="slider">
+                                        <input type="number" min="0" max="500" value="100" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Fullbright</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="fullbright">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Brightness</label>
+                                    <div class="input-group">
+                                        <input type="range" min="0.5" max="2" value="1" step="0.1" class="slider">
+                                        <input type="number" min="0.5" max="2" value="1" step="0.1" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Freecam</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="freecam">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Speed</label>
+                                    <div class="input-group">
+                                        <input type="range" min="0.5" max="5" value="2" step="0.5" class="slider">
+                                        <input type="number" min="0.5" max="5" value="2" step="0.5" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Hitbox Modifier</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="hitboxmodifier">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Size</label>
+                                    <div class="input-group">
+                                        <input type="range" min="0.5" max="2" value="1" step="0.1" class="slider">
+                                        <input type="number" min="0.5" max="2" value="1" step="0.1" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISUALS Page -->
+                <div class="page" id="page-visuals" data-page="visuals" style="display: none;">
+                    <div class="features-grid" id="visualsGrid">
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>Armor HUD</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="armorhud">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Position</label>
+                                    <select class="combo-box">
+                                        <option>Top Left</option>
+                                        <option>Top Right</option>
+                                        <option>Bottom Left</option>
+                                        <option>Bottom Right</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>ESP</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="esp">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Type</label>
+                                    <select class="combo-box">
+                                        <option>Box</option>
+                                        <option>Skeleton</option>
+                                        <option>Glow</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-header">
+                                <h3>X-Ray</h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="toggle-input" data-feature="xray">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="feature-settings">
+                                <div class="setting">
+                                    <label>Range</label>
+                                    <div class="input-group">
+                                        <input type="range" min="8" max="64" value="32" step="4" class="slider">
+                                        <input type="number" min="8" max="64" value="32" step="4" class="spinbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS Page -->
+                <div class="page" id="page-settings" data-page="settings" style="display: none;">
+                    <div class="settings-container">
+                        <!-- Profiles Section -->
+                        <div class="settings-section">
+                            <h2>PROFILES</h2>
+                            <div class="profile-management">
+                                <div class="profile-controls">
+                                    <button class="btn-primary" id="newProfileBtn">+ NEW PROFILE</button>
+                                    <button class="btn-secondary" id="editProfileBtn">EDIT</button>
+                                </div>
+                                <div class="profiles-list" id="profilesList">
+                                    <!-- Profiles will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>IMPORT / EXPORT</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Export Profile</label>
+                                    <button class="btn-primary" id="exportProfileBtn">EXPORT (JSON)</button>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Import Profile</label>
+                                    <div class="file-input-wrapper">
+                                        <button class="btn-primary" id="importProfileFileBtn">CHOOSE FILE</button>
+                                        <span id="importFileName" style="margin-left: 10px; color: #999;">No file chosen</span>
+                                        <input type="file" id="importProfileFile" accept="application/json" style="display: none;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>HACK PRESETS</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Hack Presets</label>
+                                    <p class="setting-note">Apply a ready setup instantly for your current playstyle.</p>
+                                    <div class="preset-buttons-row" style="display:flex;gap:8px;">
+                                        <button class="btn-secondary" data-preset="pvp">PVP</button>
+                                        <button class="btn-secondary" data-preset="survival">SURVIVAL</button>
+                                        <button class="btn-secondary" data-preset="creative">CREATIVE</button>
+                                        <button class="btn-secondary" data-preset="mining">MINING</button>
+                                    </div>
+                                    <hr class="settings-divider">
+                                    <label>Custom Preset Manager</label>
+                                    <div class="preset-custom-row">
+                                        <input type="text" id="customPresetName" class="modal-input" placeholder="Preset name...">
+                                        <button class="btn-secondary" id="saveCustomPresetBtn">SAVE CURRENT</button>
+                                    </div>
+                                    <div class="custom-presets-list" id="customPresetsList"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Display Settings -->
+                        <div class="settings-section">
+                            <h2>DISPLAY</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Layout</label>
+                                    <div class="layout-toggle">
+                                        <button class="layout-btn active" id="gridLayoutBtn" data-layout="grid">
+                                            <span class="layout-icon">&#8862;</span>
+                                            <span>GRID</span>
+                                        </button>
+                                        <button class="layout-btn" id="listLayoutBtn" data-layout="list">
+                                            <span class="layout-icon">&#9776;</span>
+                                            <span>LIST</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Appearance Section -->
+                        <div class="settings-section">
+                            <h2>APPEARANCE</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Theme</label>
+                                    <select class="combo-box" id="themeSelect">
+                                        <option value="dark">Dark</option>
+                                        <option value="light">Light</option>
+                                    </select>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Accent Color</label>
+                                    <input type="color" id="accentColor" value="#00d9ff" class="color-picker" data-color-label="Accent">
+                                    <div class="gradient-accent-row">
+                                        <div class="setting-label-row">
+                                            <label class="setting-label">Accent Gradient</label>
+                                            <span class="setting-tag setting-tag-experimental">EXPERIMENTAL</span>
+                                        </div>
+                                        <p class="setting-note gradient-secret-note">Rapid-click the preview for a secret mode.</p>
+                                        <div class="gradient-accent-controls">
+                                            <input type="checkbox" id="gradientAccentEnabled" class="toggle-checkbox">
+                                            <label for="gradientAccentEnabled" class="toggle-label">Enable</label>
+                                            <input type="color" id="gradientAccentColor2" value="#7c3aed" class="color-input" data-color-label="Blend">
+                                            <div class="gradient-accent-preview" id="gradientAccentPreview"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Theme Presets</label>
+                                    <div class="theme-presets">
+                                        <button class="theme-preset-btn" data-theme-preset="nexus-cyan">Nexus Cyan</button>
+                                        <button class="theme-preset-btn" data-theme-preset="inferno-red">Inferno Red</button>
+                                        <button class="theme-preset-btn" data-theme-preset="emerald-night">Emerald Night</button>
+                                        <button class="theme-preset-btn" data-theme-preset="arctic-light">Arctic Light</button>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Theme Studio</label>
+                                    <p class="setting-note">Open advanced background/glow controls on a dedicated subpage.</p>
+                                    <button class="btn-secondary" id="openThemeStudioBtn" type="button">OPEN THEME STUDIO</button>
+                                </div>
+                            </div>
+                        </div>
+
+                                                <!-- Sounds Section -->
+                        <div class="settings-section">
+                            <h2>SOUNDS</h2>
+                            <div class="sound-rows">
+                                <div class="settings-cards sounds-row">
+                                    <div class="setting-card">
+                                        <label>General button sounds</label>
+                                        <p class="setting-note">Plays click feedback for UI buttons across the interface.</p>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="enableButtonSounds" class="toggle-input">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Click Sound</label>
+                                        <select class="combo-box" id="buttonSoundSelect">
+                                            <option value="nexus-soft">Nexus Soft</option>
+                                            <option value="mechanical-tap">Mechanical Tap</option>
+                                            <option value="digital-pop">Digital Pop</option>
+                                            <option value="retro-blip">Retro Blip</option>
+                                            <option value="sharp-click">Sharp Click</option>
+                                        </select>
+                                        <button class="btn-secondary sound-preview-btn" id="previewButtonSoundBtn" type="button" data-no-auto-sound="true">PREVIEW</button>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Button Sound Volume (%)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="0" max="100" value="65" id="buttonSoundVolume" class="slider">
+                                            <input type="number" min="0" max="100" value="65" id="buttonSoundVolumeInput" class="spinbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-cards sounds-row">
+                                    <div class="setting-card">
+                                        <label>General switch sounds</label>
+                                        <p class="setting-note">Plays on/off feedback when toggles and switches are changed.</p>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="enableSwitchSounds" class="toggle-input">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Switch Sound</label>
+                                        <select class="combo-box" id="switchSoundSelect">
+                                            <option value="clean-toggle">Clean Toggle</option>
+                                            <option value="soft-switch">Soft Switch</option>
+                                            <option value="mechanical-flick">Mechanical Flick</option>
+                                            <option value="digital-switch">Digital Switch</option>
+                                            <option value="snap-toggle">Snap Toggle</option>
+                                        </select>
+                                        <button class="btn-secondary sound-preview-btn" id="previewSwitchSoundBtn" type="button" data-no-auto-sound="true">PREVIEW</button>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Switch Sound Volume (%)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="0" max="100" value="70" id="switchSoundVolume" class="slider">
+                                            <input type="number" min="0" max="100" value="70" id="switchSoundVolumeInput" class="spinbox">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Interface Section -->
+                        <div class="settings-section">
+                            <h2>INTERFACE</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Border Radius (px)</label>
+                                    <p class="setting-note">Controls how rounded corners look on cards, buttons and inputs.</p>
+                                    <div class="input-group">
+                                        <input type="range" min="0" max="20" value="8" id="borderRadiusSlider" class="slider">
+                                        <input type="number" min="0" max="20" value="8" id="borderRadiusInput" class="spinbox">
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Opacity (%)</label>
+                                    <p class="setting-note">Adjusts overall UI transparency while keeping the same theme.</p>
+                                    <div class="input-group">
+                                        <input type="range" min="50" max="100" value="100" id="opacitySlider" class="slider">
+                                        <input type="number" min="50" max="100" value="100" id="opacityInput" class="spinbox">
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Welcome Splash Screen</label>
+                                    <p class="setting-note">Shows a welcome overlay after boot with your account name.</p>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="enableWelcomeSplash" class="toggle-input">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>SYSTEM</h2>
+                            <div class="settings-cards system-settings-cards">
+                                <div class="setting-card">
+                                    <label>Performance Mode</label>
+                                    <p class="setting-note">Disables heavy animations, effects and drag interactions for better performance.</p>
+                                    <div class="setting-inline-controls">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="enablePerformanceMode" class="toggle-input">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <button class="btn-secondary" id="performanceModeInfoBtn">WHAT CHANGES?</button>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Safety Lock</label>
+                                    <p class="setting-note">Requires hold-to-confirm on risky actions like reset, delete, import and workspace overwrite.</p>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="enableSafetyLockMode" class="toggle-input">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <label>Safety Hold Time (ms)</label>
+                                    <div class="input-group">
+                                        <input type="range" min="500" max="3500" step="50" value="1500" class="slider" id="safetyLockHoldSlider">
+                                        <input type="number" min="500" max="3500" step="50" value="1500" class="spinbox" id="safetyLockHoldInput">
+                                    </div>
+                                    <p class="setting-note">Current confirmation hold: <span id="safetyLockHoldPreview">1.5s</span></p>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Startup Restore Mode</label>
+                                    <p class="setting-note">Choose which page opens right after boot.</p>
+                                    <select class="combo-box" id="startupPageSelect">
+                                        <option value="combat">Combat</option>
+                                        <option value="hacks">Hacks</option>
+                                        <option value="visuals">Visuals</option>
+                                        <option value="settings">Settings</option>
+                                        <option value="last">Last Visited Page</option>
+                                    </select>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Boot Power Confirmation</label>
+                                    <p class="setting-note">When enabled, boot waits for a POWER click before opening the UI.</p>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="enableBootPowerConfirm" class="toggle-input">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Lock UI Card Reordering</label>
+                                    <p class="setting-note">When enabled, feature cards cannot be dragged into a new order.</p>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="enableUiLockMode" class="toggle-input">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Focus Mode</label>
+                                    <p class="setting-note">Adds stronger keyboard focus outlines for clearer navigation and control.</p>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="enableFocusMode" class="toggle-input">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Fullscreen Mode</label>
+                                    <p class="setting-note">Expand the GUI to fill your screen for a cleaner dashboard view.</p>
+                                    <button class="btn-secondary" id="toggleFullscreenBtn" type="button">ENTER FULLSCREEN</button>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Debug Dashboard</label>
+                                    <p class="setting-note">Open a full telemetry dashboard with charts, plugin controls and workspace sync.</p>
+                                    <button class="btn-secondary" id="openDebugDashboardBtn" type="button">OPEN DEBUG DASHBOARD</button>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Crash Recovery</label>
+                                    <p class="setting-note">Recover the latest auto-save snapshot and inspect crash reports.</p>
+                                    <div class="setting-inline-controls">
+                                        <button class="btn-secondary" id="recoverLastAutoSaveBtn" type="button">RECOVER LAST SAVE</button>
+                                        <button class="btn-secondary" id="viewCrashReportBtn" type="button">VIEW CRASH REPORT</button>
+                                    </div>
+                                    <p class="setting-note" id="crashReportStatus">No crash report detected.</p>
+                                    <div class="setting-inline-controls" id="crashRecoveryPluginActions"></div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Auto Save Snapshots</label>
+                                    <p class="setting-note">Automatically saves your full workspace state every chosen interval.</p>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="enableAutoSaveMode" class="toggle-input">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <label>Autosave Interval (seconds)</label>
+                                    <div class="input-group">
+                                        <input type="range" min="15" max="300" step="5" value="60" class="slider" id="autoSaveIntervalSlider">
+                                        <input type="number" min="15" max="300" step="5" value="60" class="spinbox" id="autoSaveIntervalInput">
+                                    </div>
+                                    <p class="setting-note">Current interval: <span id="autoSaveIntervalPreview">60s</span></p>
+                                    <p class="setting-note" id="autoSaveStatus">Autosave is currently off.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>KEYBINDS</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Keyboard Actions</label>
+                                    <p class="setting-note">All keybinds are set to NONE by default.</p>
+                                    <button class="btn-secondary" id="openKeybindConfigBtn">CONFIGURE KEYBINDS</button>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Macros</label>
+                                    <p class="setting-note">Create custom macro chains and run multiple actions in one click.</p>
+                                    <button class="btn-secondary" id="openMacroConfigBtn">CONFIGURE MACROS</button>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Automation</label>
+                                    <p class="setting-note">Build IF/THEN rules that auto-run hacks, pages, profiles, presets or macros.</p>
+                                    <button class="btn-secondary" id="openAutomationConfigBtn">CONFIGURE AUTOMATION</button>
+                                </div>
+                                <div class="setting-card" id="workflowCanvasSettingsCard" hidden>
+                                    <label>Workflow Canvas</label>
+                                    <p class="setting-note">Visual node canvas for chaining macros, automations and key actions with line connections.</p>
+                                    <button class="btn-secondary" id="openWorkflowCanvasBtn">OPEN WORKFLOW CANVAS</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions Section -->
+                        <div class="settings-section">
+                            <h2>ACTIONS</h2>
+                            <div class="settings-actions-row">
+                                <button class="save-btn" id="saveSettings">SAVE</button>
+                                <div class="profile-unsaved-indicator" id="profileUnsavedIndicator">ALL CHANGES SAVED</div>
+                            </div>
+                            <button class="reset-btn" id="resetSettings" data-safety-lock="required">RESET TO DEFAULT</button>
+                        </div>
+
+                        <div class="settings-keybinds-page" id="settingsKeybindsPage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeKeybindConfigBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">KEYBIND GROUPS</h3>
+                                <button class="keybind-group-btn active" data-keybind-group="navigation">NAVIGATION</button>
+                                <button class="keybind-group-btn" data-keybind-group="features">HACKS</button>
+                                <button class="keybind-group-btn" data-keybind-group="actions">GENERAL SETTINGS</button>
+                                <button class="keybind-group-btn" data-keybind-group="macros">MACROS</button>
+                                <button class="keybind-group-btn" data-keybind-group="automations">AUTOMATIONS</button>
+                                <button class="keybind-group-btn" id="keybindGroupWorkflowBtn" data-keybind-group="workflow" hidden>WORKFLOW</button>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="conflict-banner" id="keybindConflictBanner">
+                                    <span>⚠</span>
+                                    <span id="keybindConflictMsg">2 keybind conflicts detected — duplicate keys may cause unexpected behavior.</span>
+                                </div>
+                                <div class="setting-card keybind-config-header">
+                                    <h3 id="keybindConfigTitle">NAVIGATION</h3>
+                                    <p class="setting-note">Click CONFIGURE, then press a key. Press ESC to cancel or DELETE to clear.</p>
+                                    <div class="keybind-io-row">
+                                        <button class="btn-secondary" id="exportKeybindsBtn">EXPORT KEYBINDS</button>
+                                        <button class="btn-secondary" id="importKeybindsBtn">IMPORT KEYBINDS</button>
+                                        <input type="file" id="importKeybindsFile" accept="application/json" style="display: none;" />
+                                    </div>
+                                </div>
+                                <div class="keybind-actions-list" id="keybindActionsList"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-macros-page" id="settingsMacrosPage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeMacroConfigBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">MACRO BUILDER</h3>
+                                <p class="setting-note">Build your own action sequence with pages, hacks and presets.</p>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="conflict-banner" id="macroConflictBanner">
+                                    <span>⚠</span>
+                                    <span id="macroConflictMsg">2 keybind conflicts detected — duplicate keys may cause unexpected behavior.</span>
+                                </div>
+                                <div class="setting-card keybind-config-header">
+                                    <h3>MACROS</h3>
+                                    <p class="setting-note">Create a macro, add steps, then run it from this list.</p>
+                                    <div class="macro-create-row">
+                                        <input class="modal-input" id="macroNameInput" placeholder="Macro name..." />
+                                        <button class="btn-secondary" id="createMacroBtn">CREATE MACRO</button>
+                                    </div>
+                                </div>
+                                <div class="keybind-actions-list" id="macrosList"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-automations-page" id="settingsAutomationsPage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeAutomationConfigBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">AUTOMATION</h3>
+                                <p class="setting-note">Create trigger rules that run automatically while Nexus is open.</p>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="setting-card keybind-config-header">
+                                    <h3>AUTOMATION RULES</h3>
+                                    <p class="setting-note">Set condition + action, enable the rule, and choose cooldown.</p>
+                                    <div class="macro-create-row">
+                                        <input class="modal-input" id="automationNameInput" placeholder="Automation name..." />
+                                        <button class="btn-secondary" id="createAutomationBtn">CREATE RULE</button>
+                                    </div>
+                                </div>
+                                <div class="keybind-actions-list" id="automationsList"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-workflow-page" id="settingsWorkflowPage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeWorkflowCanvasBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">WORKFLOW CANVAS</h3>
+                                <p class="setting-note">Node board: connect cards with lines to build a flow.</p>
+                                <div class="setting-inline-controls">
+                                    <button class="btn-secondary" id="workflowCanvasAddMacroNodeBtn" type="button">ADD MACRO NODE</button>
+                                    <button class="btn-secondary" id="workflowCanvasAddAutomationNodeBtn" type="button">ADD AUTOMATION NODE</button>
+                                </div>
+                                <div class="setting-inline-controls">
+                                    <button class="btn-secondary" id="workflowCanvasAddKeyNodeBtn" type="button">ADD KEY ACTION NODE</button>
+                                    <button class="btn-secondary" id="workflowCanvasClearBtn" data-safety-lock="required" type="button">CLEAR CANVAS</button>
+                                </div>
+                                <label class="setting-note" for="workflowCanvasLoopInput">Loops</label>
+                                <input type="number" min="1" max="10" value="1" class="spinbox" id="workflowCanvasLoopInput" />
+                                <button class="btn-primary" id="workflowCanvasRunBtn" type="button">RUN WORKFLOW</button>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="setting-card keybind-config-header">
+                                    <h3>NODE WHITEBOARD</h3>
+                                    <p class="setting-note">Click OUTPUT on one node, then INPUT on another node to draw a connection.</p>
+                                </div>
+                                <div class="setting-card">
+                                    <div class="workflow-canvas-board-wrap" id="workflowCanvasBoardWrap">
+                                        <svg id="workflowCanvasSvg" class="workflow-canvas-svg"></svg>
+                                        <div id="workflowCanvasNodesLayer" class="workflow-canvas-nodes-layer"></div>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Connections</label>
+                                    <div id="workflowCanvasConnectionsList" class="keybind-actions-list"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-custom-pages-page" id="settingsCustomPagesPage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeCustomPagesBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">CUSTOM PAGE STUDIO</h3>
+                                <p class="setting-note">Build your own sidebar pages and custom UI controls.</p>
+                                <label class="setting-note" for="customPagesNameInput">New Page Name</label>
+                                <input class="modal-input" id="customPagesNameInput" placeholder="Page name..." />
+                                <button class="btn-secondary" id="customPagesCreateBtn" type="button">CREATE PAGE</button>
+                                <p class="setting-note">Pages</p>
+                                <div id="customPagesList" class="keybind-actions-list"></div>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="setting-card keybind-config-header">
+                                    <h3 id="customPagesEditorTitle">CUSTOM PAGE EDITOR</h3>
+                                    <p class="setting-note">Select a page from the left, then add cards and widgets.</p>
+                                </div>
+                                <div class="setting-card">
+                                    <div class="setting-inline-controls">
+                                        <button class="btn-secondary" id="customPagesOpenRuntimeBtn" type="button">OPEN SELECTED PAGE</button>
+                                        <button class="btn-secondary" id="customPagesAddCardBtn" type="button">ADD CARD</button>
+                                    </div>
+                                </div>
+                                <div id="customPagesCardsList" class="custom-page-cards-grid"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-debug-page" id="settingsDebugPage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeDebugDashboardBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">DEBUG DASHBOARD</h3>
+                                <p class="setting-note">Large telemetry view with live charts and debug controls.</p>
+                                <button class="keybind-group-btn" id="toggleHackDemoBtn" type="button">DEBUG OFF</button>
+                                <label class="setting-note" for="debugDashRefreshRate">Refresh Rate</label>
+                                <select id="debugDashRefreshRate" class="combo-box">
+                                    <option value="250">250ms</option>
+                                    <option value="500">500ms</option>
+                                    <option value="750">750ms</option>
+                                    <option value="1000">1000ms</option>
+                                    <option value="1500">1500ms</option>
+                                </select>
+                                <div class="setting-inline-controls">
+                                    <button class="btn-secondary" id="debugDashMiniWindowBtn" type="button">MINI WINDOW OFF</button>
+                                    <button class="btn-secondary" id="debugDashClearLogBtn" type="button">CLEAR LOG</button>
+                                </div>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="setting-card keybind-config-header">
+                                    <h3>LIVE DEBUG TELEMETRY</h3>
+                                    <p class="setting-note">Shows all monitor stats in one place. Mini window remains available while this dashboard is open.</p>
+                                </div>
+
+                                <div class="setting-card">
+                                    <div class="debug-dashboard-runtime">
+                                        <span>Runtime</span>
+                                        <strong id="debugDashRuntime">00:00</strong>
+                                    </div>
+                                    <div class="debug-dashboard-stats-grid">
+                                        <div class="demo-stat">
+                                            <span>Active Hacks</span>
+                                            <strong id="debugDashActive">0/16</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Move Speed</span>
+                                            <strong id="debugDashSpeed">4.3 b/s</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Latency</span>
+                                            <strong id="debugDashLatency">N/A</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Packet Rate</span>
+                                            <strong id="debugDashPacketRate">N/A</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Jitter</span>
+                                            <strong id="debugDashJitter">N/A</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Network</span>
+                                            <strong id="debugDashNetwork">N/A</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Downlink</span>
+                                            <strong id="debugDashDownlink">N/A</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>FPS</span>
+                                            <strong id="debugDashFps">0</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Heap</span>
+                                            <strong id="debugDashHeap">N/A</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>CPU Cores</span>
+                                            <strong id="debugDashCores">N/A</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Page</span>
+                                            <strong id="debugDashPage">COMBAT</strong>
+                                        </div>
+                                        <div class="demo-stat">
+                                            <span>Profile</span>
+                                            <strong id="debugDashProfile">Default</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="setting-card">
+                                    <div class="debug-chart-tabs">
+                                        <button class="btn-secondary debug-chart-tab is-active" type="button" data-debug-metric="speed">SPEED</button>
+                                        <button class="btn-secondary debug-chart-tab" type="button" data-debug-metric="fps">FPS</button>
+                                        <button class="btn-secondary debug-chart-tab" type="button" data-debug-metric="latency">LATENCY</button>
+                                        <button class="btn-secondary debug-chart-tab" type="button" data-debug-metric="packets">PACKETS</button>
+                                        <button class="btn-secondary debug-chart-tab" type="button" data-debug-metric="active">ACTIVE HACKS</button>
+                                        <button class="btn-secondary debug-chart-tab" type="button" data-debug-metric="heap">HEAP</button>
+                                    </div>
+                                    <div class="debug-chart-canvas-wrap">
+                                        <canvas id="debugDashboardChart"></canvas>
+                                    </div>
+                                    <p class="setting-note" id="debugChartMeta">SPEED (b/s) - latest 90 samples</p>
+                                </div>
+
+                                <div class="setting-card">
+                                    <label>Debug Activity Log</label>
+                                    <div class="demo-panel-log debug-dashboard-log" id="debugDashboardLog">
+                                        <div class="demo-log-empty">Start debug monitor to collect live telemetry.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section" id="pluginsSection">
+                            <h2>PLUGINS</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card" id="pluginManagerCard">
+                                    <label>Plugin Manager</label>
+                                    <p class="setting-note">Install plugin packages made by others and manage custom mod-style extensions for Nexus. If a plugin needs setup, add a CONFIGURE flow (button or route).</p>
+                                    <div class="debug-plugin-create-row">
+                                        <input class="modal-input" id="debugPluginNameInput" placeholder="Plugin name..." />
+                                        <input class="modal-input" id="debugPluginVersionInput" placeholder="Version" />
+                                        <input class="modal-input" id="debugPluginAuthorInput" placeholder="Author" />
+                                        <button class="btn-secondary" id="createDebugPluginBtn" type="button">ADD</button>
+                                    </div>
+                                    <div class="debug-plugin-create-row">
+                                        <input class="modal-input" id="debugPluginSourceInput" placeholder="Plugin source URL (optional)" />
+                                    </div>
+                                    <div class="debug-plugin-tools">
+                                        <button class="btn-secondary" id="openMarketplaceBtn" type="button">OPEN MARKETPLACE</button>
+                                        <button class="btn-secondary" id="openPluginGuideBtn" type="button">PLUGIN GUIDE</button>
+                                        <button class="btn-secondary" id="importPluginPackageBtn" type="button">IMPORT PLUGIN PACKAGE</button>
+                                        <button class="btn-secondary" id="exportPluginPackageBtn" type="button">EXPORT PLUGIN LIST</button>
+                                    </div>
+                                    <input type="file" id="importPluginPackageFile" accept="application/json" style="display: none;" />
+                                    <div class="debug-plugins-list" id="debugPluginsList"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-marketplace-page" id="settingsMarketplacePage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeMarketplaceBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">PLUGIN MARKETPLACE</h3>
+                                <p class="setting-note">Browse curated plugins and install/update them directly.</p>
+
+                                <label class="setting-note" for="marketplaceSearchInput">Search</label>
+                                <input class="modal-input" id="marketplaceSearchInput" placeholder="Search plugins..." />
+
+                                <label class="setting-note" for="marketplaceCategoryFilter">Category</label>
+                                <select id="marketplaceCategoryFilter" class="combo-box">
+                                    <option value="all">All Categories</option>
+                                    <option value="utility">Utility</option>
+                                    <option value="ui">UI</option>
+                                    <option value="automation">Automation</option>
+                                    <option value="debug">Debug</option>
+                                </select>
+
+                                <label class="setting-note" for="marketplaceStatusFilter">Status</label>
+                                <select id="marketplaceStatusFilter" class="combo-box">
+                                    <option value="all">All</option>
+                                    <option value="updates">Update Available</option>
+                                    <option value="installed">Installed</option>
+                                    <option value="not-installed">Not Installed</option>
+                                </select>
+
+                                <label class="setting-note" for="marketplaceSortSelect">Sort By</label>
+                                <select id="marketplaceSortSelect" class="combo-box">
+                                    <option value="popular">Popularity</option>
+                                    <option value="name">Name A-Z</option>
+                                    <option value="newest">Newest</option>
+                                    <option value="installed">Installed First</option>
+                                </select>
+
+                                <p class="setting-note" id="marketplaceSummary">Loading marketplace...</p>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="setting-card keybind-config-header">
+                                    <h3>CURATED PLUGINS</h3>
+                                    <p class="setting-note">Status is checked automatically against your installed plugin list each time you open this page.</p>
+                                </div>
+                                <div class="keybind-actions-list marketplace-list-grid" id="marketplaceList"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-theme-studio-page" id="settingsThemeStudioPage">
+                            <div class="keybind-subsidebar setting-card">
+                                <button class="keybind-back-btn" id="closeThemeStudioBtn">&#8592; BACK TO SETTINGS</button>
+                                <h3 class="keybind-subtitle">THEME STUDIO</h3>
+                                <p class="setting-note">Fine tune glow sizes/intensity for main background and boot screen.</p>
+                                <p class="setting-note" id="themeStudioStatus">Using saved studio values.</p>
+                            </div>
+
+                            <div class="keybind-config-content">
+                                <div class="setting-card keybind-config-header">
+                                    <h3>BACKGROUND GLOW CONTROLS</h3>
+                                    <p class="setting-note">Adjust live glow, custom UI colors and accessibility options, then save or reset.</p>
+                                </div>
+                                <div class="settings-cards">
+                                    <div class="setting-card">
+                                        <label>Main Orb Size (px)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="260" max="1800" value="560" class="slider" id="themeStudioMainSizeSlider">
+                                            <input type="number" min="260" max="1800" value="560" class="spinbox" id="themeStudioMainSizeInput">
+                                        </div>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Main Orb Opacity (%)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="0" max="40" value="15" class="slider" id="themeStudioMainAlphaSlider">
+                                            <input type="number" min="0" max="40" value="15" class="spinbox" id="themeStudioMainAlphaInput">
+                                        </div>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Secondary Orb Opacity (%)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="0" max="35" value="9" class="slider" id="themeStudioSecondaryAlphaSlider">
+                                            <input type="number" min="0" max="35" value="9" class="spinbox" id="themeStudioSecondaryAlphaInput">
+                                        </div>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Tertiary Orb Opacity (%)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="0" max="35" value="8" class="slider" id="themeStudioTertiaryAlphaSlider">
+                                            <input type="number" min="0" max="35" value="8" class="spinbox" id="themeStudioTertiaryAlphaInput">
+                                        </div>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Boot Orb Size (px)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="1200" max="4200" value="2100" class="slider" id="themeStudioBootSizeSlider">
+                                            <input type="number" min="1200" max="4200" value="2100" class="spinbox" id="themeStudioBootSizeInput">
+                                        </div>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Boot Orb Opacity (%)</label>
+                                        <div class="input-group">
+                                            <input type="range" min="0" max="45" value="16" class="slider" id="themeStudioBootAlphaSlider">
+                                            <input type="number" min="0" max="45" value="16" class="spinbox" id="themeStudioBootAlphaInput">
+                                        </div>
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Main Background Color</label>
+                                        <input type="color" id="themeStudioMainBgColor" value="#0d0d0d" class="color-picker">
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Sidebar Color</label>
+                                        <input type="color" id="themeStudioSidebarBgColor" value="#1a1a1a" class="color-picker">
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Header Color</label>
+                                        <input type="color" id="themeStudioHeaderBgColor" value="#111111" class="color-picker">
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Card Interior Color</label>
+                                        <input type="color" id="themeStudioCardBgColor" value="#1a1a1a" class="color-picker">
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Button Surface Color</label>
+                                        <p class="setting-note">Leave this on the default theme color to keep automatic light/dark behavior.</p>
+                                        <input type="color" id="themeStudioButtonBgColor" value="#111111" class="color-picker">
+                                    </div>
+                                    <div class="setting-card">
+                                        <label>Colorblind Mode</label>
+                                        <p class="setting-note">Adds stronger visual separation for UI states.</p>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="themeStudioColorblindEnabled" class="toggle-input">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <label>Colorblind Preset</label>
+                                        <select class="combo-box" id="themeStudioColorblindMode">
+                                            <option value="protanopia">Protanopia Friendly</option>
+                                            <option value="deuteranopia">Deuteranopia Friendly</option>
+                                            <option value="tritanopia">Tritanopia Friendly</option>
+                                            <option value="high-contrast">High Contrast</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-card">
+                                        <div class="setting-row">
+                                            <span class="setting-label">Background Pattern</span>
+                                            <select id="bgPatternSelect" class="setting-select">
+                                                <option value="none">None</option>
+                                                <option value="nexus">Nexus Pulse</option>
+                                                <option value="dots">Dot Grid</option>
+                                                <option value="grid">Line Grid</option>
+                                                <option value="hexagon">Hex Pulse</option>
+                                                <option value="matrix">Matrix Rain</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="setting-card">
+                                        <div class="setting-group">
+                                            <span class="setting-label">Sidebar Icons</span>
+                                            <div class="sidebar-icon-editor" id="sidebarIconEditor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="setting-inline-controls">
+                                    <button class="btn-secondary" id="resetThemeStudioBtn" type="button">RESET STUDIO</button>
+                                    <button class="btn-primary" id="saveThemeStudioBtn" type="button">SAVE STUDIO</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>WORKSPACE SYNC</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Global Workspace Sync</label>
+                                    <p class="setting-note">Export/import your full Nexus local workspace as one JSON snapshot for this whole project setup.</p>
+                                    <div class="setting-inline-controls">
+                                        <button class="btn-secondary" id="exportWorkspaceSyncBtn" type="button">EXPORT WORKSPACE</button>
+                                        <button class="btn-secondary" id="importWorkspaceSyncBtn" type="button">IMPORT WORKSPACE</button>
+                                        <button class="btn-secondary" id="resetWorkspaceSyncBtn" type="button">RESET WORKSPACE</button>
+                                    </div>
+                                    <input type="file" id="importWorkspaceSyncFile" accept="application/json" style="display: none;" />
+                                    <p class="setting-note" id="workspaceSyncStatus">No workspace sync action yet.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>RECENT CHANGES</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Recent Activity (max 25)</label>
+                                    <p class="setting-note">Tracks your latest changes with one-click undo.</p>
+                                    <div class="setting-inline-controls">
+                                        <button class="btn-secondary" id="clearRecentChangesBtn" data-safety-lock="required">CLEAR ACTIVITY</button>
+                                    </div>
+                                    <div class="recent-changes-list" id="recentChangesList"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABOUT Page -->
+                <div class="page" id="page-about" data-page="about" style="display: none;">
+                    <div class="settings-container about-page-container">
+                        <div class="settings-section">
+                            <h2>ABOUT NEXUS</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Nexus Desktop Control Suite</label>
+                                    <p class="setting-note">Power. Precision. Control.</p>
+                                    <div class="about-meta-grid">
+                                        <div class="about-meta-item">
+                                            <span class="about-meta-key">Version</span>
+                                            <span class="about-meta-value" id="aboutAppVersion">v0.0.0-beta</span>
+                                        </div>
+                                        <div class="about-meta-item">
+                                            <span class="about-meta-key">Build Date</span>
+                                            <span class="about-meta-value" id="aboutBuildDate">Unknown</span>
+                                        </div>
+                                        <div class="about-meta-item">
+                                            <span class="about-meta-key">Developer</span>
+                                            <span class="about-meta-value" id="aboutDeveloper">Nexus Team</span>
+                                        </div>
+                                        <div class="about-meta-item">
+                                            <span class="about-meta-key">Tech Stack</span>
+                                            <span class="about-meta-value" id="aboutTechStack">HTML, CSS, JavaScript</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>What This App Does</label>
+                                    <p class="setting-note">Nexus is a control dashboard for feature state, presets, automation, macros, keybinds and plugins in one workspace.</p>
+                                    <p class="setting-note">You can save full profiles, sync workspaces and manage plugin-based extensions from one UI.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>UPDATES & ROADMAP</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Release Information</label>
+                                    <p class="setting-note">Open release notes, planned roadmap and update status from here.</p>
+                                    <div class="setting-inline-controls">
+                                        <button class="btn-secondary" id="aboutOpenChangelogBtn" type="button">OPEN CHANGELOG</button>
+                                        <button class="btn-secondary" id="aboutOpenRoadmapBtn" type="button">OPEN ROADMAP</button>
+                                        <button class="btn-secondary" id="aboutCheckUpdatesBtn" type="button">CHECK FOR UPDATES</button>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Support & Repair Center</label>
+                                    <p class="setting-note">Reset and recovery tools are grouped in a dedicated support page.</p>
+                                    <button class="btn-primary" id="openSupportPageBtn" type="button">OPEN SUPPORT CENTER</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>LINKS</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>External Help</label>
+                                    <p class="setting-note">Open your support repository/issues page.</p>
+                                    <div class="setting-inline-controls">
+                                        <button class="btn-secondary" id="aboutGithubBtn" type="button">OPEN GITHUB</button>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Diagnostics</label>
+                                    <p class="setting-note">Copy runtime details quickly when you need support.</p>
+                                    <div class="setting-inline-controls">
+                                        <button class="btn-secondary" id="aboutCopyDebugInfoBtn" type="button">COPY DEBUG INFO</button>
+                                    </div>
+                                    <p class="setting-note" id="aboutSystemInfo">System info not loaded yet.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>LICENSE, CREDITS & SAFETY</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>License & Credits</label>
+                                    <p class="setting-note"><strong>License model:</strong> Personal Use License (editable by owner).</p>
+                                    <p class="setting-note">You may modify your local build for private use. Redistribution or resale requires explicit permission from the owner.</p>
+                                    <p class="setting-note"><strong>Credits:</strong> Nexus core UI architecture, plugin runtime system, theme engine, macro/automation framework and debug tooling.</p>
+                                    <p class="setting-note"><strong>Attribution slots:</strong> icon pack author, sound preset contributors, plugin creators, QA testers.</p>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Safety Disclaimer</label>
+                                    <p class="setting-note">Use this software responsibly. Keep backups before importing workspace files or applying destructive actions.</p>
+                                    <p class="setting-note">Profile roles and safety lock can reduce accidental misclicks.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUPPORT Page -->
+                <div class="page" id="page-support" data-page="support" style="display: none;">
+                    <div class="settings-container support-page-container">
+                        <div class="settings-section">
+                            <h2>SUPPORT CENTER</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Quick Troubleshooting</label>
+                                    <p class="setting-note">Run core diagnostics/recovery actions from one place.</p>
+                                    <div class="support-actions-grid">
+                                        <button class="btn-secondary" id="supportRecoverAutoSaveBtn" type="button">RECOVER LAST SAVE</button>
+                                        <button class="btn-secondary" id="supportViewCrashReportBtn" type="button">VIEW CRASH REPORT</button>
+                                        <button class="btn-secondary" id="supportCopyDebugInfoBtn" type="button">COPY DEBUG INFO</button>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Repair & Reset Tools</label>
+                                    <p class="setting-note">These actions use the same protection and confirmation flows as Settings.</p>
+                                    <div class="support-actions-grid">
+                                        <button class="btn-secondary" id="supportResetProfileBtn" type="button">RESET CURRENT PROFILE</button>
+                                        <button class="btn-secondary" id="supportResetWorkspaceBtn" type="button">RESET WORKSPACE</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>HELP LINKS</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>External Help</label>
+                                    <p class="setting-note">Open your support repository/issues page.</p>
+                                    <div class="support-actions-grid">
+                                        <button class="btn-secondary" id="supportGithubBtn" type="button">OPEN GITHUB</button>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Safety Guide</label>
+                                    <ul class="about-list">
+                                        <li>Always export workspace before major resets/imports.</li>
+                                        <li>Only import plugin files from trusted sources.</li>
+                                        <li>Use Safety Lock for destructive actions.</li>
+                                        <li>Use role permissions to protect critical profiles.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>NAVIGATION</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Back to About</label>
+                                    <p class="setting-note">Return to product information and release details.</p>
+                                    <button class="btn-primary" id="backToAboutPageBtn" type="button">BACK TO ABOUT</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHANGELOG Page -->
+                <div class="page" id="page-changelog" data-page="changelog" style="display: none;">
+                    <div class="settings-container changelog-page-container">
+                        <div class="settings-section">
+                            <h2>CHANGELOG</h2>
+                            <div class="settings-cards">
+                                <div class="setting-card">
+                                    <label>Recent Additions</label>
+                                    <p class="setting-note">Latest major additions and improvements in Nexus.</p>
+                                    <div class="changelog-timeline">
+                                        <div class="changelog-item">
+                                            <span class="changelog-dot"></span>
+                                            <div>
+                                                <strong>About + Support Pages</strong>
+                                                <p class="setting-note">Added dedicated ABOUT and SUPPORT pages with diagnostics and recovery actions.</p>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-dot"></span>
+                                            <div>
+                                                <strong>Plugin Marketplace + Runtime Pages</strong>
+                                                <p class="setting-note">Marketplace install states and runtime plugin page mounting are now integrated.</p>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-dot"></span>
+                                            <div>
+                                                <strong>Workflow Canvas Plugin</strong>
+                                                <p class="setting-note">Node-based flow builder for chaining actions and automation sequences.</p>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-dot"></span>
+                                            <div>
+                                                <strong>Custom Page Studio Plugin</strong>
+                                                <p class="setting-note">Build custom pages/cards/widgets from plugin runtime configuration.</p>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-dot"></span>
+                                            <div>
+                                                <strong>Theme Studio Expansion</strong>
+                                                <p class="setting-note">Advanced color and glow controls including accessibility/colorblind options.</p>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-dot"></span>
+                                            <div>
+                                                <strong>Safety + Recovery Features</strong>
+                                                <p class="setting-note">Safety lock hold confirmation, autosave snapshots, crash report viewer and recovery actions.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="setting-card">
+                                    <label>Navigation</label>
+                                    <p class="setting-note">Go back to ABOUT when done reviewing release notes.</p>
+                                    <button class="btn-primary" id="backToAboutFromChangelogBtn" type="button">BACK TO ABOUT</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Profile Manager</h2>
+                <button class="modal-close" id="closeProfileModal">&#10005;</button>
+            </div>
+            <div class="modal-body" id="profileModalBody">
+                <!-- Content will be dynamically added -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Reset Confirm Modal -->
+    <div class="modal" id="resetConfirmModal" aria-hidden="true">
+        <div class="modal-content reset-confirm-content">
+            <div class="modal-header">
+                <h2>Reset Confirmation</h2>
+                <button class="modal-close" id="closeResetConfirmModal">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <p class="reset-confirm-text">Are you sure you want to reset everything to default?</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm" id="confirmResetBtn" data-safety-lock="required">I AM SURE</button>
+                    <button class="modal-btn cancel" id="cancelResetBtn">NO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="workspaceImportConfirmModal" aria-hidden="true">
+        <div class="modal-content reset-confirm-content">
+            <div class="modal-header">
+                <h2>Workspace Import</h2>
+                <button class="modal-close" id="closeWorkspaceImportConfirmModal">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <p class="reset-confirm-text">Importing a workspace will overwrite your current local configuration. Continue?</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm" id="confirmWorkspaceImportBtn" data-safety-lock="required">IMPORT AND OVERWRITE</button>
+                    <button class="modal-btn cancel" id="cancelWorkspaceImportBtn">CANCEL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="workspaceResetConfirmModal" aria-hidden="true">
+        <div class="modal-content reset-confirm-content">
+            <div class="modal-header">
+                <h2>Workspace Reset</h2>
+                <button class="modal-close" id="closeWorkspaceResetConfirmModal">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <p class="reset-confirm-text">This will reset your entire workspace to defaults. Continue?</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm" id="confirmWorkspaceResetBtn" data-safety-lock="required">RESET WORKSPACE</button>
+                    <button class="modal-btn cancel" id="cancelWorkspaceResetBtn">CANCEL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="performanceInfoModal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Performance Mode Impact</h2>
+                <button class="modal-close" id="closePerformanceInfoModal">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <p class="setting-note"><strong>What it disables:</strong> card/stagger animations, glow shadows, heavy transitions and drag interactions.</p>
+                <p class="setting-note"><strong>Expected impact:</strong> medium to high FPS/UI responsiveness improvement on slower systems.</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="closePerformanceInfoBtn">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="roadmapModal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nexus Roadmap (Planned / Not Guaranteed)</h2>
+                <button class="modal-close" id="closeRoadmapModalBtn">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <p class="setting-note">These are possible future additions and are <strong>not guaranteed</strong>.</p>
+                <div class="roadmap-line">
+                    <div class="roadmap-node">
+                        <span class="roadmap-badge">NOW</span>
+                        <h4>Plugin Runtime Stabilization</h4>
+                        <p class="setting-note">Improve plugin lifecycle reliability and dependency checks.</p>
+                    </div>
+                    <div class="roadmap-node">
+                        <span class="roadmap-badge">NEXT</span>
+                        <h4>Macro Sequencer V2</h4>
+                        <p class="setting-note">Better step controls, loop conditions and execution visibility.</p>
+                    </div>
+                    <div class="roadmap-node">
+                        <span class="roadmap-badge">LATER</span>
+                        <h4>Workspace Compare</h4>
+                        <p class="setting-note">Diff view between two workspace snapshots before import.</p>
+                    </div>
+                    <div class="roadmap-node">
+                        <span class="roadmap-badge">IDEA</span>
+                        <h4>Plugin Signature Trust</h4>
+                        <p class="setting-note">Optional trust/signed status for safer third-party plugin installs.</p>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="closeRoadmapModalBottomBtn">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="pluginConfigModal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pluginConfigModalTitle">Plugin Config</h2>
+                <button class="modal-close" id="closePluginConfigModalBtn">&#10005;</button>
+            </div>
+            <div class="modal-body" id="pluginConfigModalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="pluginGuideModal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Plugin Guide & Safety</h2>
+                <button class="modal-close" id="closePluginGuideModalBtn">&#10005;</button>
+            </div>
+            <div class="modal-body" id="pluginGuideModalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="pluginDepModal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Missing Dependencies</h2>
+                <button class="modal-close" id="closePluginDepModal">&#10005;</button>
+            </div>
+            <div class="modal-body" id="pluginDepModalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="crashReportModal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crash Report</h2>
+                <button class="modal-close" id="closeCrashReportModalBtn">&#10005;</button>
+            </div>
+            <div class="modal-body" id="crashReportModalBody"></div>
+        </div>
+    </div>
+
+    <div class="mini-hud hidden" id="miniHud" aria-hidden="true">
+        <div class="mini-hud-header" id="miniHudHeader">
+            <span>NEXUS PIP</span>
+            <button class="mini-hud-min-btn" id="miniHudMinimizeBtn">&#9472;</button>
+        </div>
+        <div class="mini-hud-body" id="miniHudBody">
+            <div class="mini-hud-row"><span>Session</span><strong id="miniHudTimer">00:00</strong></div>
+            <div class="mini-hud-row"><span>Active Hacks</span><strong id="miniHudActiveCount">0/16</strong></div>
+            <div class="mini-hud-row"><span>Profile</span><strong id="miniHudProfile">Default</strong></div>
+            <div class="mini-hud-list" id="miniHudActiveList"></div>
+        </div>
+    </div>
+
+    <div class="demo-panel hidden" id="hackDemoPanel" aria-hidden="true">
+        <div class="demo-panel-header" id="hackDemoPanelHeader">
+            <span>DEBUG MONITOR</span>
+            <div class="demo-panel-header-right">
+                <strong id="hackDemoRuntime">00:00</strong>
+                <span class="demo-drag-hint">DRAG</span>
+                <button class="demo-close-btn" id="hackDemoCloseBtn" aria-label="Close Debug Monitor">&#10005;</button>
+            </div>
+        </div>
+        <div class="demo-panel-controls">
+            <label class="demo-control">
+                <span>Refresh</span>
+                <select id="hackDemoRefreshRate" class="demo-refresh-select">
+                    <option value="250">250ms</option>
+                    <option value="500">500ms</option>
+                    <option value="750">750ms</option>
+                    <option value="1000">1000ms</option>
+                    <option value="1500">1500ms</option>
+                </select>
+            </label>
+            <button class="demo-control-btn" id="hackDemoCompactBtn">COMPACT OFF</button>
+            <button class="demo-control-btn is-active" id="hackDemoAutoScrollBtn">AUTO LOG ON</button>
+            <button class="demo-control-btn" id="hackDemoResetPosBtn">RESET POS</button>
+            <button class="demo-control-btn" id="hackDemoClearLogBtn">CLEAR LOG</button>
+        </div>
+        <div class="demo-panel-grid">
+            <div class="demo-stat">
+                <span>Active Hacks</span>
+                <strong id="hackDemoActive">0/16</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Move Speed</span>
+                <strong id="hackDemoSpeed">4.3 b/s</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Latency</span>
+                <strong id="hackDemoLatency">N/A</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Packet Rate</span>
+                <strong id="hackDemoPacketRate">N/A</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Jitter</span>
+                <strong id="hackDemoJitter">N/A</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Network</span>
+                <strong id="hackDemoNetwork">N/A</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Downlink</span>
+                <strong id="hackDemoDownlink">N/A</strong>
+            </div>
+            <div class="demo-stat">
+                <span>FPS</span>
+                <strong id="hackDemoFps">0</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Heap</span>
+                <strong id="hackDemoHeap">N/A</strong>
+            </div>
+            <div class="demo-stat">
+                <span>CPU Cores</span>
+                <strong id="hackDemoCores">N/A</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Page</span>
+                <strong id="hackDemoPage">combat</strong>
+            </div>
+            <div class="demo-stat">
+                <span>Profile</span>
+                <strong id="hackDemoProfile">Default</strong>
+            </div>
+        </div>
+        <div class="demo-panel-log" id="hackDemoLog">
+            <div class="demo-log-empty">Start debug monitor to collect live telemetry.</div>
+        </div>
+    </div>
+
+    <div class="radial-menu" id="radialMenu" aria-hidden="true">
+        <div class="radial-center"></div>
+        <button class="radial-btn radial-top" data-radial-action="toggle">TOGGLE</button>
+        <button class="radial-btn radial-right" data-radial-action="favorite">FAVORITE</button>
+        <button class="radial-btn radial-bottom" data-radial-action="select">SELECT</button>
+        <button class="radial-btn radial-left" data-radial-action="reset-card">RESET CARD</button>
+    </div>
+
+    <div class="boot-screen" id="bootScreen" aria-hidden="false">
+        <div class="boot-hero">
+            <span class="boot-logo" aria-hidden="true"></span>
+            <div class="boot-title">NEXUS LOADER</div>
+            <div class="boot-slogan">Power. Precision. Control.</div>
+        </div>
+        <div class="boot-panel">
+            <div class="boot-subtitle" id="bootSubtitle">Initializing modules...</div>
+            <div class="boot-progress-track">
+                <div class="boot-progress-fill" id="bootProgressFill"></div>
+            </div>
+            <button class="boot-continue-btn" id="bootContinueBtn" type="button" aria-label="Power">
+                <span class="boot-continue-icon" aria-hidden="true">⏻</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-feed" id="toastFeed" aria-live="polite" aria-atomic="false"></div>
+    <div class="welcome-splash" id="welcomeSplash" aria-hidden="true">
+        <div class="welcome-content">
+            <div class="welcome-line">WELCOME</div>
+            <div class="welcome-username" id="welcomeUsername">GAST</div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

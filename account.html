@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Account</title>
+    <script>
+        (function () {
+            function hexToRgbCsv(hex) {
+                const v = String(hex || '').trim().replace(/^#/, '');
+                const normalized = v.length === 3 ? v.split('').map(ch => ch + ch).join('') : v;
+                if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return '0, 217, 255';
+                const n = parseInt(normalized, 16);
+                const r = (n >> 16) & 255;
+                const g = (n >> 8) & 255;
+                const b = n & 255;
+                return r + ', ' + g + ', ' + b;
+            }
+            function clamp(value, min, max, fallback) {
+                const n = Number(value);
+                if (!Number.isFinite(n)) return fallback;
+                return Math.max(min, Math.min(max, n));
+            }
+            function parseJson(raw, fallback) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    return parsed && typeof parsed === 'object' ? parsed : fallback;
+                } catch (e) {
+                    return fallback;
+                }
+            }
+
+            var root = document.documentElement;
+            var currentProfile = String(localStorage.getItem('nexus-currentProfile') || 'Default').trim() || 'Default';
+            var profilesData = parseJson(localStorage.getItem('nexus-profiles'), {});
+            var profileData = profilesData && typeof profilesData === 'object' ? profilesData[currentProfile] : null;
+            var accent = (profileData && profileData.accent) || localStorage.getItem('nexus-accent') || '#00d9ff';
+            var radius = clamp((profileData && profileData.borderRadius) || localStorage.getItem('nexus-borderRadius'), 0, 20, 8);
+            var opacityPct = clamp((profileData && profileData.opacity) || localStorage.getItem('nexus-opacity'), 50, 100, 100);
+            var theme = String((profileData && profileData.theme) || localStorage.getItem('nexus-theme') || 'dark').toLowerCase();
+            var studioDefaults = {
+                bootSize: 2100,
+                bootAlphaPct: 16,
+                mainBgColor: '#0d0d0d',
+                cardBgColor: '#1a1a1a'
+            };
+            var studio = (profileData && profileData.themeStudio) || parseJson(localStorage.getItem('nexus-themeStudio'), {});
+
+            root.style.setProperty('--accent', accent);
+            root.style.setProperty('--accent-rgb', hexToRgbCsv(accent));
+            root.style.setProperty('--border-radius', radius + 'px');
+            root.style.setProperty('--ui-opacity', String(opacityPct / 100));
+            root.style.setProperty('--theme-studio-main-bg', studio.mainBgColor || studioDefaults.mainBgColor);
+            root.style.setProperty('--theme-studio-card-bg', studio.cardBgColor || studioDefaults.cardBgColor);
+            root.style.setProperty('--boot-orb-size', clamp(studio.bootSize, 1200, 4200, studioDefaults.bootSize) + 'px');
+            root.style.setProperty('--boot-orb-alpha', String(clamp(studio.bootAlphaPct, 0, 45, studioDefaults.bootAlphaPct) / 100));
+
+            if (theme === 'light') {
+                root.classList.add('light-theme');
+            } else {
+                root.classList.remove('light-theme');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="account.css">
+</head>
+<body>
+    <div class="boot-screen account-loader" id="accountLoader" aria-hidden="false">
+        <div class="boot-hero">
+            <span class="boot-logo" aria-hidden="true"></span>
+            <div class="boot-title">NEXUS ACCOUNT</div>
+            <div class="boot-slogan">Power. Precision. Control.</div>
+        </div>
+        <div class="boot-panel">
+            <div class="boot-subtitle" id="accountLoaderSubtitle">Forwarding to account portal...</div>
+            <div class="boot-progress-track">
+                <div class="boot-progress-fill" id="accountLoaderFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="account-shell">
+        <aside class="account-side">
+            <h1>NEXUS ACCOUNT</h1>
+            <p>Sign in or create an account profile for this local Nexus workspace.</p>
+            <ul>
+                <li>Local account session storage</li>
+                <li>Username shown in header account button</li>
+                <li>Optional custom avatar URL</li>
+            </ul>
+            <div class="nexus-settings-box">
+                <div class="nexus-settings-title">Current Nexus UI</div>
+                <div class="nexus-settings-summary" id="nexusSettingsSummary">Loading profile settings...</div>
+            </div>
+            <button type="button" class="ghost-btn" id="backToNexusBtn">BACK TO NEXUS</button>
+        </aside>
+
+        <main class="account-main">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="signin" type="button">SIGN IN</button>
+                <button class="tab-btn" data-tab="signup" type="button">SIGN UP</button>
+            </div>
+
+            <section class="tab-panel active" id="tab-signin">
+                <form id="signInForm" novalidate>
+                    <label>Email</label>
+                    <input type="email" id="signInEmail" class="field" placeholder="you@example.com" required>
+
+                    <label>Password</label>
+                    <input type="password" id="signInPassword" class="field" placeholder="Password" required>
+
+                    <button type="submit" class="primary-btn" id="signInSubmitBtn">SIGN IN</button>
+                </form>
+            </section>
+
+            <section class="tab-panel" id="tab-signup">
+                <form id="signUpForm" novalidate>
+                    <label>Username</label>
+                    <input type="text" id="signUpUsername" class="field" placeholder="NexusUser" required>
+
+                    <label>Email</label>
+                    <input type="email" id="signUpEmail" class="field" placeholder="you@example.com" required>
+
+                    <label>Password</label>
+                    <input type="password" id="signUpPassword" class="field" placeholder="Choose password" required>
+
+                    <label>Confirm Password</label>
+                    <input type="password" id="signUpPasswordConfirm" class="field" placeholder="Repeat password" required>
+
+                    <label>Avatar URL (optional)</label>
+                    <input type="url" id="signUpAvatar" class="field" placeholder="https://.../avatar.png">
+
+                    <button type="submit" class="primary-btn" id="signUpSubmitBtn">CREATE ACCOUNT</button>
+                </form>
+            </section>
+
+            <div class="auth-progress" id="authProgress" hidden>
+                <div class="auth-progress-label" id="authProgressLabel">Processing...</div>
+                <div class="auth-progress-track">
+                    <div class="auth-progress-fill" id="authProgressFill"></div>
+                </div>
+            </div>
+
+            <div class="status" id="accountStatus">Waiting for action...</div>
+
+            <div class="session-box" id="currentSessionBox"></div>
+
+            <section class="account-manage" id="accountManageSection" hidden>
+                <div class="account-manage-head">MANAGE ACCOUNT</div>
+                <p class="account-manage-note">Update username, email, avatar and password for your current account.</p>
+                <form id="manageAccountForm" novalidate>
+                    <label>Username</label>
+                    <input type="text" id="manageUsername" class="field" placeholder="NexusUser" required>
+
+                    <label>Email</label>
+                    <input type="email" id="manageEmail" class="field" placeholder="you@example.com" required>
+
+                    <label>Avatar URL</label>
+                    <input type="url" id="manageAvatar" class="field" placeholder="https://.../avatar.png">
+
+                    <label>Current Password (required to change password)</label>
+                    <input type="password" id="manageCurrentPassword" class="field" placeholder="Current password">
+
+                    <label>New Password</label>
+                    <input type="password" id="manageNewPassword" class="field" placeholder="New password">
+
+                    <label>Confirm New Password</label>
+                    <input type="password" id="manageConfirmPassword" class="field" placeholder="Repeat new password">
+
+                    <button type="submit" class="primary-btn" id="manageAccountSaveBtn">SAVE ACCOUNT CHANGES</button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="account.js"></script>
+</body>
+</html>
