@@ -1,0 +1,30 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-19T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "macro-tools-pack",
+      "name": "Macro Tools Pack",
+      "version": "1.0.3",
+      "author": "Nexus Labs",
+      "sourceUrl": "plugins/macro-tools-pack.plugin.json",
+      "description": "Automation helper package entry.",
+      "enabled": false,
+      "behavior": "macro-tools-pack",
+      "configurable": false,
+      "configureRoute": "",
+      "configureHint": "",
+      "info": {
+        "title": "Macro Tools Pack",
+        "what": "Adds macro quality tools: estimated runtime, duplicate button and runtime delay tuning.",
+        "how": "When enabled, macro cards get extra controls and macro execution applies adaptive delay pacing.",
+        "usage": "Enable in Plugin Manager, then open Macros to use DUPLICATE and see estimated duration.",
+        "notes": [
+          "No standalone configuration screen required."
+        ]
+      },
+      "config": {}
+    }
+  ]
+}

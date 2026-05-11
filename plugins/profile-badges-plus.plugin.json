@@ -1,0 +1,30 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-19T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "profile-badges-plus",
+      "name": "Profile Badges Plus",
+      "version": "1.1.0",
+      "author": "Nexus Labs",
+      "sourceUrl": "plugins/profile-badges-plus.plugin.json",
+      "description": "UI plugin package entry for profile badge styling.",
+      "enabled": false,
+      "behavior": "profile-badges-plus",
+      "configurable": false,
+      "configureRoute": "",
+      "configureHint": "",
+      "info": {
+        "title": "Profile Badges Plus",
+        "what": "Adds ACTIVE/FAVORITE/CORE badges to profile items for faster scanning.",
+        "how": "When enabled, profile list cards are re-rendered with badge chips based on profile state.",
+        "usage": "Enable in Plugin Manager and open Profiles list to see badge chips.",
+        "notes": [
+          "Pure UI helper plugin."
+        ]
+      },
+      "config": {}
+    }
+  ]
+}

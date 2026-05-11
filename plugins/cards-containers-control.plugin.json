@@ -1,0 +1,32 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-19T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "cards-containers-control",
+      "name": "Cards & Containers Control",
+      "version": "1.0.0",
+      "author": "Nexus Community",
+      "sourceUrl": "plugins/cards-containers-control.plugin.json",
+      "description": "Use SELECT MODE ON/OFF in Plugin Manager, then click cards/containers to make them dim + inactive.",
+      "enabled": false,
+      "behavior": "cards-containers-control",
+      "configurable": true,
+      "configureRoute": "",
+      "configureHint": "Use SELECT MODE ON/OFF in the plugin row. Popup is optional.",
+      "info": {
+        "title": "Cards & Containers Control",
+        "what": "Lets you disable specific cards/containers in the UI so they are dimmed and inactive.",
+        "how": "Turn SELECT MODE ON, click cards/containers to set them inactive, then turn selection mode OFF.",
+        "usage": "Use SELECT MODE in the plugin row and click targets. Use CLEAR DISABLED to reset all selections.",
+        "notes": [
+          "Best used for locking parts of the interface during focused sessions."
+        ]
+      },
+      "config": {
+        "disabledTargetIds": []
+      }
+    }
+  ]
+}

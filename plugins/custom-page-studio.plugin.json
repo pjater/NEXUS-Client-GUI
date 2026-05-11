@@ -1,0 +1,41 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-20T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "custom-page-studio",
+      "name": "Custom Page",
+      "version": "1.0.0",
+      "author": "Nexus Labs",
+      "sourceUrl": "plugins/custom-page-studio.plugin.json",
+      "description": "Experimental (BETA): build multiple custom sidebar pages with cards, buttons and interactive widgets.",
+      "enabled": false,
+      "behavior": "custom-page-studio",
+      "stability": "beta",
+      "experimental": true,
+      "configurable": true,
+      "configureRoute": "",
+      "configureHint": "Experimental (BETA): open Custom Page Studio and create pages/cards/widgets from the Settings subpage.",
+      "info": {
+        "title": "Custom Page (BETA)",
+        "what": "Experimental builder that creates a Settings subpage where you can make your own sidebar pages.",
+        "how": "Create pages, then add cards and widgets like text boxes, selects, sliders, switches and action buttons.",
+        "usage": "Enable plugin, open Custom Page Studio, create pages and build cards/widgets. Some parts can still be unstable.",
+        "notes": [
+          "BETA: not all flows are final; behavior can change.",
+          "Button widgets can run Nexus actions.",
+          "All layout data is stored in plugin config."
+        ]
+      },
+      "config": {
+        "pageTitle": "Custom Page Studio",
+        "pages": [],
+        "selectedPageId": ""
+      },
+      "requiredPermissions": [
+        "ui"
+      ]
+    }
+  ]
+}

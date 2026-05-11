@@ -1,0 +1,30 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-19T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "debug-packets-lite",
+      "name": "Debug Packets Lite",
+      "version": "0.9.5",
+      "author": "Community",
+      "sourceUrl": "plugins/debug-packets-lite.plugin.json",
+      "description": "Adds packet-rate and jitter telemetry to dashboard, chart and debug log.",
+      "enabled": false,
+      "behavior": "debug-packets-lite",
+      "configurable": false,
+      "configureRoute": "",
+      "configureHint": "",
+      "info": {
+        "title": "Debug Packets Lite",
+        "what": "Adds packet-rate and jitter telemetry to the debug monitor.",
+        "how": "When enabled, the debug runtime computes packet rate and jitter and extends log/chart output.",
+        "usage": "Enable in Plugin Manager, then open Debug Dashboard and check Packet Rate/Jitter and PACKETS chart tab.",
+        "notes": [
+          "Lightweight debug companion plugin."
+        ]
+      },
+      "config": {}
+    }
+  ]
+}

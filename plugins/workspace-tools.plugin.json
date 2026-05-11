@@ -1,0 +1,30 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-19T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "workspace-tools",
+      "name": "Workspace Tools",
+      "version": "1.2.1",
+      "author": "Nexus Labs",
+      "sourceUrl": "plugins/workspace-tools.plugin.json",
+      "description": "Workspace helper package entry.",
+      "enabled": false,
+      "behavior": "workspace-tools",
+      "configurable": false,
+      "configureRoute": "",
+      "configureHint": "",
+      "info": {
+        "title": "Workspace Tools",
+        "what": "Adds workspace summaries, automatic import backup, and restore-backup control.",
+        "how": "When enabled, imports create backup snapshots and workspace status includes detailed counts.",
+        "usage": "Enable in Plugin Manager and use Workspace Sync import/export; restore via RESTORE BACKUP.",
+        "notes": [
+          "Designed as utility support layer."
+        ]
+      },
+      "config": {}
+    }
+  ]
+}

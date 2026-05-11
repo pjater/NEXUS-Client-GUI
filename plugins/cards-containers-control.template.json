@@ -1,0 +1,33 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "YYYY-MM-DDTHH:mm:ss.sssZ",
+  "plugins": [
+    {
+      "id": "your-cards-containers-plugin-id",
+      "name": "Your Cards/Containers Control Plugin",
+      "version": "1.0.0",
+      "author": "Your Name",
+      "sourceUrl": "",
+      "description": "Use a selection mode control to click UI cards/containers that should be dimmed + inactive.",
+      "enabled": false,
+      "behavior": "cards-containers-control",
+      "configurable": true,
+      "configureRoute": "",
+      "configureHint": "Recommended: provide a SELECT MODE ON/OFF control in the plugin row. Popup is optional.",
+      "info": {
+        "title": "Plugin Display Name",
+        "what": "Short explanation of what the plugin does.",
+        "how": "Short explanation of how it works.",
+        "usage": "Clear usage steps for the user.",
+        "notes": [
+          "Optional note 1",
+          "Optional note 2"
+        ]
+      },
+      "config": {
+        "disabledTargetIds": []
+      }
+    }
+  ]
+}

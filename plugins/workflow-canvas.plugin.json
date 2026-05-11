@@ -1,0 +1,42 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-20T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "workflow-canvas",
+      "name": "Workflow Canvas",
+      "version": "1.0.0",
+      "author": "Nexus Labs",
+      "sourceUrl": "plugins/workflow-canvas.plugin.json",
+      "description": "Create and run node-based workflows with draggable cards and line connections.",
+      "enabled": false,
+      "behavior": "workflow-canvas",
+      "configurable": true,
+      "configureRoute": "",
+      "configureHint": "Open Workflow Canvas from Settings and connect nodes using input/output ports.",
+      "info": {
+        "title": "Workflow Canvas",
+        "what": "Adds a node whiteboard under Settings to build connected workflows.",
+        "how": "Add nodes, drag them, connect OUTPUT to INPUT, then run looped execution order.",
+        "usage": "Enable plugin, open Workflow Canvas and create linked nodes for macros/automations/key actions.",
+        "notes": [
+          "Uses existing Nexus runtime actions.",
+          "Supports loop count and per-step delay."
+        ]
+      },
+      "config": {
+        "pageTitle": "Workflow Canvas",
+        "loopCount": 1,
+        "steps": [],
+        "nodes": [],
+        "connections": [],
+        "selectedNodeId": ""
+      },
+      "requiredPermissions": [
+        "ui",
+        "automation"
+      ]
+    }
+  ]
+}

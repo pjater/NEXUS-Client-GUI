@@ -1,0 +1,28 @@
+{
+  "id": "crash-test-tools",
+  "name": "Crash Test Tools",
+  "version": "1.0.0",
+  "author": "Nexus Labs",
+  "sourceUrl": "plugins/crash-test-tools.plugin.json",
+  "description": "Adds a guarded FORCE CRASH TEST action in Crash Recovery to validate crash-report flow.",
+  "enabled": false,
+  "behavior": "crash-test-tools",
+  "configurable": false,
+  "requiredPermissions": [
+    "debug"
+  ],
+  "permissions": {
+    "debug": true
+  },
+  "info": {
+    "title": "Crash Test Tools",
+    "what": "Adds a safety-locked button that intentionally throws a runtime error for recovery tests.",
+    "how": "When enabled, Crash Recovery shows FORCE CRASH TEST. Pressing it stores a crash report and triggers an intentional runtime error.",
+    "usage": "Enable plugin in Plugin Manager and use FORCE CRASH TEST in Settings > System > Crash Recovery.",
+    "notes": [
+      "Testing-only plugin.",
+      "Use on non-critical sessions."
+    ]
+  },
+  "config": {}
+}

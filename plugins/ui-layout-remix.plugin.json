@@ -1,0 +1,33 @@
+{
+  "type": "nexus-plugin-package",
+  "version": 1,
+  "exportedAt": "2026-02-20T00:00:00.000Z",
+  "plugins": [
+    {
+      "id": "ui-layout-remix",
+      "name": "UI Layout Remix",
+      "version": "1.0.0",
+      "author": "Nexus Community",
+      "sourceUrl": "plugins/ui-layout-remix.plugin.json",
+      "description": "Move sidebar to right side and place the full header block at top or bottom.",
+      "enabled": false,
+      "behavior": "ui-layout-remix",
+      "configurable": true,
+      "configureRoute": "",
+      "configureHint": "Use CONFIGURE to set sidebar side and header position.",
+      "info": {
+        "title": "UI Layout Remix",
+        "what": "Rearranges core UI structure: sidebar side and header position.",
+        "how": "Applies layout classes to move sidebar left/right and relocate the header block to top or bottom.",
+        "usage": "Enable plugin, then press CONFIGURE and choose Sidebar Position + Header Position.",
+        "notes": [
+          "Useful if you prefer right-handed navigation or a bottom control bar."
+        ]
+      },
+      "config": {
+        "sidebarPosition": "left",
+        "headerPosition": "top"
+      }
+    }
+  ]
+}
